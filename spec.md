@@ -6,8 +6,6 @@ A Bank account class with an amount and an email. It can be accessed, deposited 
 
 ## Output Structure
 
-## Output Structure
-
 Generate the minimal files needed to use and test the library. Do not create package distribution scaffolding.
 
 **Do generate:**
