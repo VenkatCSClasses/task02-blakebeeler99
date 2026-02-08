@@ -1,0 +1,217 @@
+tests:
+  - name: "getBalanceTest - integer starting balance"
+    constructor:
+      email: "a@b.com"
+      startingBalance: 200.00
+    action:
+      method: "getBalance"
+    expected:
+      value: 200.00
+
+  - name: "getBalanceTest - decimal starting balance"
+    constructor:
+      email: "a@b.com"
+      startingBalance: 120.34
+    action:
+      method: "getBalance"
+    expected:
+      value: 120.34
+
+  - name: "withdrawTest - valid withdraw"
+    constructor:
+      email: "a@b.com"
+      startingBalance: 200.00
+    actions:
+      - method: "withdraw"
+        args: [100.00]
+    expected:
+      balance: 100.00
+
+  - name: "withdrawTest - zero withdraw"
+    constructor:
+      email: "a@b.com"
+      startingBalance: 200.00
+    actions:
+      - method: "withdraw"
+        args: [0.00]
+    expected:
+      balance: 200.00
+
+  - name: "withdrawTest - negative withdraw throws IllegalArgumentException"
+    constructor:
+      email: "a@b.com"
+      startingBalance: 200.00
+    actions:
+      - method: "withdraw"
+        args: [-50.00]
+    expected:
+      exception: "IllegalArgumentException"
+
+  - name: "withdrawTest - insufficient funds throws InsufficientFundsException"
+    constructor:
+      email: "a@b.com"
+      startingBalance: 200.00
+    actions:
+      - method: "withdraw"
+        args: [300.00]
+    expected:
+      exception: "InsufficientFundsException"
+
+  - name: "withdrawTest - border negative throws IllegalArgumentException"
+    constructor:
+      email: "a@b.com"
+      startingBalance: 200.00
+    actions:
+      - method: "withdraw"
+        args: [-0.01]
+    expected:
+      exception: "IllegalArgumentException"
+
+  - name: "withdrawTest - 3 decimal places throws IllegalArgumentException"
+    constructor:
+      email: "a@b.com"
+      startingBalance: 200.00
+    actions:
+      - method: "withdraw"
+        args: [0.011]
+    expected:
+      exception: "IllegalArgumentException"
+
+  - name: "isEmailValidTest - valid and invalid examples"
+    cases:
+      - email: "a@b.com"
+        expected: true
+      - email: ""
+        expected: false
+      - email: "abc..@gmail.com"
+        expected: false
+      - email: "abc.@gmail..com"
+        expected: false
+      - email: "abc.a@gmail.com"
+        expected: true
+      - email: "abcgmail.com"
+        expected: false
+      - email: "abc@gmail.com"
+        expected: true
+      - email: "@gmail.com"
+        expected: false
+      - email: "a@gmail.com"
+        expected: true
+      - email: "abc#@gmail.com"
+        expected: false
+      - email: "abc@gmail.com"
+        expected: true
+      - email: ".abc@gmail.com"
+        expected: false
+      - email: "abc.@gmail.com"
+        expected: false
+      - email: "abc@"
+        expected: false
+      - email: "abc@b.com"
+        expected: true
+      - email: "abc@com"
+        expected: false
+      - email: "abc@.com"
+        expected: false
+      - email: "abc@b.c"
+        expected: false
+      - email: "abc@b.cc"
+        expected: true
+      - email: "abc@b#.com"
+        expected: false
+      - email: "abc@b-b.com"
+        expected: true
+
+  - name: "constructorTest - valid and invalid constructor behavior"
+    cases:
+      - constructor:
+          email: "a@b.com"
+          startingBalance: 200.00
+        expected:
+          email: "a@b.com"
+          balance: 200.00
+      - constructor:
+          email: ""
+          startingBalance: 100.00
+        expected:
+          exception: "IllegalArgumentException"
+      - constructor:
+          email: "a@b.com"
+          startingBalance: -100.00
+        expected:
+          exception: "IllegalArgumentException"
+      - constructor:
+          email: "a@b.com"
+          startingBalance: 100.999
+        expected:
+          exception: "IllegalArgumentException"
+
+  - name: "isAmountValidTest - positive/negative/decimal checks"
+    cases:
+      - amount: 100.00
+        expected: true
+      - amount: 0.00
+        expected: true
+      - amount: -0.01
+        expected: false
+      - amount: -100.00
+        expected: false
+      - amount: 100.10000909
+        expected: false
+      - amount: 100.999
+        expected: false
+      - amount: 100.00
+        expected: true
+      - amount: 100.9
+        expected: true
+
+  - name: "depositTest - valid and invalid deposits"
+    constructor:
+      email: "a@b.com"
+      startingBalance: 100.00
+    actions:
+      - method: "deposit"
+        args: [50.00]
+      - method: "deposit"
+        args: [0.00]
+    expected:
+      balance: 150.00
+    error_cases:
+      - method: "deposit"
+        args: [-20.00]
+        expectedException: "IllegalArgumentException"
+      - method: "deposit"
+        args: [-0.01]
+        expectedException: "IllegalArgumentException"
+      - method: "deposit"
+        args: [0.011]
+        expectedException: "IllegalArgumentException"
+
+  - name: "transferTest - valid, zero, invalid, insufficient funds"
+    constructor:
+      - email: "a@b.com"
+        startingBalance: 100.00
+      - email: "a@b.com"
+        startingBalance: 200.00
+    actions:
+      - method: "transfer"
+        args: [1, 50.00]
+      - method: "transfer"
+        args: [1, 0.00]
+    expected:
+      balances:
+        - 50.00
+        - 250.00
+    error_cases:
+      - method: "transfer"
+        args: [1, -30.00]
+        expectedException: "IllegalArgumentException"
+      - method: "transfer"
+        args: [1, -0.01]
+        expectedException: "IllegalArgumentException"
+      - method: "transfer"
+        args: [1, 0.011]
+        expectedException: "IllegalArgumentException"
+      - method: "transfer"
+        args: [1, 100.00]
+        expectedException: "InsufficientFundsException"
